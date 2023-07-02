@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TodoApp</title>
+</head>
+<body>
+    <header>
+      <h1>Todo_App</h1>  
+    </header>
+    <form onsubmit="AddWorkTostorage(event)">
+      <div>
+        <label for="Work">Work</label>
+        <input type="text" id="work" placeholder="Add WOrk">
+        <label for="Description">Description</label>
+        <input type="text" id="description" placeholder="add description">
+        <button type="submit">Add</button>
+    </div>
+</form>
+<br>
+<label for="listOfWork">ToDos_remaining</label>
+<ul id="listOfWork"></ul>
+<label for="WorkDone">Work_Done</label>
+<ul id="listOfWorkDone"></ul>
+</body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+<script>
+function AddWorkTostorage(event){
+    event.preventDefault()
+    const work = event.target.work.value;
+    const description = event.target.description.value;
+
+    const obj={
+          work,
+          description
+        }
+    axios.post("https://crudcrud.com/api/be350606fe774191b7e23ce337b5ebca/ToDoWOrk",obj)
+    .then((ToDoWork)=>{
+        showOnScreen(ToDoWork.data);
+    })
+    .catch(err=>console.log(err));
+}
+
+function showOnScreen(ToDoWork)
+{
+     const parentEle = document.getElementById('listOfWork')
+     const childEle = document.createElement('li')
+     childEle.textContent = ToDoWork.work+'-'+ToDoWork.description;
+     parentEle.appendChild(childEle);
+
+     const parentEleWD = document.getElementById('listOfWorkDone')
+     const childEleWD = document.createElement('li')
+
+
+     const DeleteBtn = document.createElement('input')
+     DeleteBtn.type ="submit";
+     DeleteBtn.value = 'Delete'
+     childEle.append(DeleteBtn);
+
+     DeleteBtn.onclick=()=>{
+     axios.delete(`https://crudcrud.com/api/be350606fe774191b7e23ce337b5ebca/ToDoWOrk/${ToDoWork._id}`)
+     localStorage.removeItem(DeleteBtn);
+     parentEle.removeChild(childEle);
+     }
+
+     const WDBtn = document.createElement('input')
+     WDBtn.type ="submit";
+     WDBtn.value = 'Done'
+     childEle.append(WDBtn);
+     
+     WDBtn.onclick= async ()=>{
+         const work = ToDoWork.work;
+         const description = ToDoWork.description;
+         
+         const obj={
+          work,
+          description
+        }
+        axios.post("https://crudcrud.com/api/38d8d55d889d4cd9a89ae3b6bc25e06d/ToDoWork",obj);
+        parentEle.removeChild(childEle);
+        childEleWD.textContent = ToDoWork.work+'-'+ToDoWork.description;
+        parentEleWD.appendChild(childEleWD);
+     }
+     childEle.append(WDBtn);
+
+}
+window.addEventListener("DOMContentLoaded",async()=>{
+    await axios.get("https://crudcrud.com/api/be350606fe774191b7e23ce337b5ebca/ToDoWOrk")
+    .then((ToDoWork)=>{
+        console.log(ToDoWork);
+        for(let i=0; i<ToDoWork.data.length; i++)
+        {
+            showOnScreen(ToDoWork.data[i]);
+        }
+    })
+    .catch(err=>console.log(err));
+})
+
+
+</script>
+</html>
