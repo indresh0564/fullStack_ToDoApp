@@ -26,6 +26,7 @@
 </body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
 <script>
+
 function AddWorkTostorage(event){
     event.preventDefault()
     const work = event.target.work.value;
@@ -35,23 +36,25 @@ function AddWorkTostorage(event){
           work,
           description
         }
-    axios.post("https://crudcrud.com/api/be350606fe774191b7e23ce337b5ebca/ToDoWOrk",obj)
+                      //   ToDos_Remaining
+
+     axios.post("http://localhost:3000/AddWork",obj)
     .then((ToDoWork)=>{
-        showOnScreen(ToDoWork.data);
+      showOnScreen(ToDoWork.data.newWorkData);
     })
     .catch(err=>console.log(err));
 }
+                     //   ToDos_Remaining
 
 function showOnScreen(ToDoWork)
 {
+    console.log(ToDoWork);
      const parentEle = document.getElementById('listOfWork')
      const childEle = document.createElement('li')
      childEle.textContent = ToDoWork.work+'-'+ToDoWork.description;
      parentEle.appendChild(childEle);
 
-     const parentEleWD = document.getElementById('listOfWorkDone')
-     const childEleWD = document.createElement('li')
-
+                   //Delete Button
 
      const DeleteBtn = document.createElement('input')
      DeleteBtn.type ="submit";
@@ -59,17 +62,19 @@ function showOnScreen(ToDoWork)
      childEle.append(DeleteBtn);
 
      DeleteBtn.onclick=()=>{
-     axios.delete(`https://crudcrud.com/api/be350606fe774191b7e23ce337b5ebca/ToDoWOrk/${ToDoWork._id}`)
+     axios.delete(`http://localhost:3000/delete_Work/${ToDoWork.id}`)
      localStorage.removeItem(DeleteBtn);
      parentEle.removeChild(childEle);
      }
+
+                     //Work Done Button
 
      const WDBtn = document.createElement('input')
      WDBtn.type ="submit";
      WDBtn.value = 'Done'
      childEle.append(WDBtn);
      
-     WDBtn.onclick= async ()=>{
+     WDBtn.onclick = async ()=>{
          const work = ToDoWork.work;
          const description = ToDoWork.description;
          
@@ -77,18 +82,40 @@ function showOnScreen(ToDoWork)
           work,
           description
         }
-        axios.post("https://crudcrud.com/api/38d8d55d889d4cd9a89ae3b6bc25e06d/ToDoWork",obj);
-        parentEle.removeChild(childEle);
-        childEleWD.textContent = ToDoWork.work+'-'+ToDoWork.description;
-        parentEleWD.appendChild(childEleWD);
+                    //Work Done
+
+       await axios.post("http://localhost:3000/AddWorkDone",obj)
+        .then((ToDoWork)=>{
+        showOnScreenDone(ToDoWork.data);
+    })
+    .catch(err=>console.log(err));
+           
+                      //Work Done
+
+    function showOnScreenDone(workDone){
+     const parentEleWD = document.getElementById('listOfWorkDone')
+     const childEleWD = document.createElement('li')
+     childEleWD.textContent = ToDoWork.work+'-'+ToDoWork.description;
+     parentEleWD.appendChild(childEleWD);
+    }
+    await axios.delete(`http://localhost:3000/delete_Work/${ToDoWork.id}`)
+    parentEle.removeChild(childEle);
      }
      childEle.append(WDBtn);
-
 }
+                      //Work Done
+
+function showOnScreenDone(workDone){
+     const parentEleWD = document.getElementById('listOfWorkDone')
+     const childEleWD = document.createElement('li')
+     childEleWD.textContent = workDone.work+'-'+workDone.description;
+        parentEleWD.appendChild(childEleWD);
+    }
+                   //ToDos_remaining
+
 window.addEventListener("DOMContentLoaded",async()=>{
-    await axios.get("https://crudcrud.com/api/be350606fe774191b7e23ce337b5ebca/ToDoWOrk")
+    await axios.get("http://localhost:3000/get_Work")
     .then((ToDoWork)=>{
-        console.log(ToDoWork);
         for(let i=0; i<ToDoWork.data.length; i++)
         {
             showOnScreen(ToDoWork.data[i]);
@@ -96,7 +123,18 @@ window.addEventListener("DOMContentLoaded",async()=>{
     })
     .catch(err=>console.log(err));
 })
+                 // Work_Done
 
+window.addEventListener("DOMContentLoaded",async()=>{
+    await axios.get("http://localhost:3000/get_WorkDone")
+    .then((ToDoWork)=>{
+        for(let i=0; i<ToDoWork.data.length; i++)
+        {
+            showOnScreenDone(ToDoWork.data[i]);
+        }
+    })
+    .catch(err=>console.log(err));
+})
 
 </script>
 </html>
